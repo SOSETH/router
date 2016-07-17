@@ -1,0 +1,46 @@
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
+:IN_EXT - [0:0]
+:IN_INT - [0:0]
+:FW_EXT_INT - [0:0]
+-A INPUT -i lo -j ACCEPT
+-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -p icmp -m conntrack --ctstate NEW -j ACCEPT
+-A INPUT -i eth0 -j IN_EXT
+-A INPUT -i eth1 -j IN_INT
+-A INPUT -j LOG  --log-prefix "End of input chain reached -> unknown interface: " --log-level 4
+-A INPUT -j DROP
+
+# SSH, HTTPS for EXT
+-A IN_EXT -p tcp -m tcp --dport 22 -j ACCEPT
+-A IN_EXT -p tcp -m tcp --dport 443 -j ACCEPT
+-A IN_EXT -p udp -m udp --dport 443 -j ACCEPT
+# Allow specific packets to be routed
+-A IN_EXT -d 172.31.0.192/26 -p udp -m udp --dport 623 -j ACCEPT
+-A IN_EXT -m limit --limit 10/min -j LOG  --log-prefix "FW-EXT-DROP: " --log-level 4
+-A IN_EXT -j DROP
+# Everything for int
+-A IN_INT -j ACCEPT
+
+-A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A FORWARD -i eth0 -o eth1 -j FW_EXT_INT
+-A FORWARD -m limit --limit 10/min -j LOG  --log-prefix "FW-NF-DROP: " --log-level 4
+-A FORWARD -j DROP
+
+# Lets only forward UDP port 623 (ipmi) for now
+-A FW_EXT_INT -p udp -m udp --dport 623 -j ACCEPT
+-A FW_EXT_INT -p icmp -m conntrack --ctstate NEW -j ACCEPT
+-A FW_EXT_INT -m limit --limit 10/min -j LOG  --log-prefix "FW-EXTINT-DROP: " --log-level 4
+-A FW_EXT_INT -j DROP
+
+COMMIT
+
+*nat
+:PREROUTING ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+-A POSTROUTING -o eth0 ! -d 82.130.108.192/27 -j MASQUERADE
+-A POSTROUTING -o eth1 -s 82.130.108.192/27 -j MASQUERADE
+-A POSTROUTING -o eth1 -s 192.168.254.1/24 -j MASQUERADE
+COMMIT

@@ -1,0 +1,12 @@
+---
+  - name: restart keepalived
+    service: name=keepalived state=restarted
+
+  - name: reload sysctl
+    service: name=systemd-sysctl state=restarted
+
+  - name: reload systemd
+    command: systemctl daemon-reload
+
+  - name: reload iptables
+    service: name=netfilter-persistent state=restarted
