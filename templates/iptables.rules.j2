@@ -19,6 +19,7 @@
 -A IN_EXT -p udp -m udp --dport 443 -j ACCEPT
 # Allow specific packets to be routed
 -A IN_EXT -d 172.31.0.192/26 -p udp -m udp --dport 623 -j ACCEPT
+-A IN_EXT -d 172.31.0.192/26 -p udp -m udp --dport 161 -j ACCEPT
 -A IN_EXT -m limit --limit 10/min -j LOG  --log-prefix "FW-EXT-DROP: " --log-level 4
 -A IN_EXT -j DROP
 # Everything for int
@@ -31,6 +32,8 @@
 
 # Lets only forward UDP port 623 (ipmi) for now
 -A FW_EXT_INT -p udp -m udp --dport 623 -j ACCEPT
+# Port 161 for E3METER SNMP
+-A FW_EXT_INT -p udp -m udp --dport 161 -j ACCEPT
 -A FW_EXT_INT -p icmp -m conntrack --ctstate NEW -j ACCEPT
 -A FW_EXT_INT -m limit --limit 10/min -j LOG  --log-prefix "FW-EXTINT-DROP: " --log-level 4
 -A FW_EXT_INT -j DROP
