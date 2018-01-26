@@ -6,7 +6,7 @@
     service: name=systemd-sysctl state=restarted
 
   - name: reload systemd
-    command: systemctl daemon-reload
+    systemd: daemon_reload=yes
 
   - name: reload iptables
     service: name=netfilter-persistent state=restarted
