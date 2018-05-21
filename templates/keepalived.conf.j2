@@ -2,7 +2,7 @@
 
 vrrp_instance FW_2 {
     state MASTER
-    interface eth0
+    interface enp1s0
     virtual_router_id 50
     priority {{ portal_ha_prio }}
     advert_int 1
@@ -11,7 +11,8 @@ vrrp_instance FW_2 {
         auth_pass pxyvnfWxGKCWONHiO4eazLqaitB9dUVd
     }
     virtual_ipaddress {
-        82.130.108.220/27 dev eth0
-        2001:67c:10ec:49c4::31c/118 dev eth0
+        82.130.108.220/27 dev enp1s0
+        2001:67c:10ec:49c4::31c/118 dev enp1s0
+        172.31.0.240/26 dev enp2s0
     }
 }

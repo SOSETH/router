@@ -8,6 +8,9 @@
 -A INPUT -i lo -j ACCEPT
 -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 -A INPUT -p icmp -m conntrack --ctstate NEW -j ACCEPT
+# VRRP (keepalived)
+-A INPUT -p vrrp -j ACCEPT
+-A INPUT -p ah -j ACCEPT
 -A INPUT -i enp1s0 -j IN_EXT
 -A INPUT -i enp2s0 -j IN_INT
 -A INPUT -j LOG  --log-prefix "End of input chain reached -> unknown interface: " --log-level 4
