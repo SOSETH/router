@@ -29,7 +29,7 @@
 -A IN_INT -j ACCEPT
 
 -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
--A FORWARD -i enp1s0 -o enpr2s0 -j FW_EXT_INT
+-A FORWARD -i enp1s0 -o enp2s0 -j FW_EXT_INT
 -A FORWARD -m limit --limit 10/min -j LOG  --log-prefix "FW-NF-DROP: " --log-level 4
 -A FORWARD -j DROP
 
