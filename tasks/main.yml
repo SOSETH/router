@@ -1,29 +1,50 @@
 ---
   - name: Install needed software
     become: True
-    apt: name={{ item }} state=present update_cache=yes cache_valid_time=1800
-    with_items:
-      - keepalived
-      - iptables-persistent
+    apt:
+      name:
+        - keepalived
+        - iptables-persistent
+      state: present
+      update_cache: True
+      cache_valid_time: 1800
 
   - name: Configure keepalived
     become: True
-    template: src=keepalived.conf.j2 dest=/etc/keepalived/keepalived.conf owner=root group=root mode=0644
+    template:
+      src: keepalived.conf.j2
+      dest: /etc/keepalived/keepalived.conf
+      owner: root
+      group: root
+      mode: 0644
     notify: restart keepalived
 
   - name: Configure sysctl dropin
     become: True
-    template: src=sysctl.conf.j2 dest=/etc/sysctl.d/ansible.conf owner=root group=root mode=0755
+    template:
+      src: sysctl.conf.j2
+      dest: /etc/sysctl.d/ansible.conf
+      owner: root
+      group: root
+      mode: 0755
     notify: reload sysctl
 
   - name: Configure iptables
     become: True
-    template: src=iptables.rules.j2 dest=/etc/iptables/rules.v4 owner=root group=root mode=0644
+    template:
+      src: iptables.rules.j2
+      dest: /etc/iptables/rules.v4
+      owner: root
+      group: root
+      mode: 0644
     notify: reload iptables
 
   - name: Enable services
     become: True
-    service: name={{ item }} enabled=yes state=started
+    service:
+      name: "{{ item }}"
+      enabled: True
+      state: started
     with_items:
       - sshd
       - keepalived
