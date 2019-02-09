@@ -5,48 +5,65 @@
 :IN_EXT - [0:0]
 :IN_INT - [0:0]
 :FW_EXT_INT - [0:0]
+:FW_INT_EXT - [0:0]
 -A INPUT -i lo -j ACCEPT
 -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 -A INPUT -p icmp -m conntrack --ctstate NEW -j ACCEPT
 # VRRP (keepalived)
 -A INPUT -p vrrp -j ACCEPT
 -A INPUT -p ah -j ACCEPT
--A INPUT -i enp1s0 -j IN_EXT
--A INPUT -i enp2s0 -j IN_INT
+{% for item in router_external_interfaces %}
+-A INPUT -i {{ item }} -j IN_EXT
+{% endfor %}
+{% for item in router_internal_interfaces %}
+-A INPUT -i {{ item }} -j IN_INT
+{% endfor %}
 -A INPUT -j LOG  --log-prefix "End of input chain reached -> unknown interface: " --log-level 4
 -A INPUT -j DROP
 
-# SSH, HTTPS for EXT
--A IN_EXT -p tcp -m tcp --dport 22 -j ACCEPT
--A IN_EXT -p tcp -m tcp --dport 443 -j ACCEPT
--A IN_EXT -p udp -m udp --dport 443 -j ACCEPT
+{% for item in router_external_open_ports %}
+-A IN_EXT -p {{ item.proto }} -m {{ item.proto }} --dport {{ item.port }} -j ACCEPT
+{% endfor %}
 # Allow specific packets to be routed
--A IN_EXT -d 172.31.0.192/26 -p udp -m udp --dport 623 -j ACCEPT
--A IN_EXT -d 172.31.0.192/26 -p udp -m udp --dport 161 -j ACCEPT
+{% for item in router_external_forward_allowed %}
+-A IN_EXT -d {{ item.dest }} -p {{ item.proto }} -m {{ item.proto }} --dport {{ item.port }} -j ACCEPT
+{% endfor %}
 -A IN_EXT -m limit --limit 10/min -j LOG  --log-prefix "FW-EXT-DROP: " --log-level 4
 -A IN_EXT -j DROP
 # Everything for int
 -A IN_INT -j ACCEPT
 
 -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
--A FORWARD -i enp1s0 -o enp2s0 -j FW_EXT_INT
+{% for extif in router_external_interfaces %}
+{% for intif in router_internal_interfaces %}
+-A FORWARD -i {{ extif }} -o {{ intif }} -j FW_EXT_INT
+-A FORWARD -i {{ intif }} -o {{ extif }} -j FW_INT_EXT
+{% endfor %}
+{% endfor %}
 -A FORWARD -m limit --limit 10/min -j LOG  --log-prefix "FW-NF-DROP: " --log-level 4
 -A FORWARD -j DROP
 
-# Lets only forward UDP port 623 (ipmi) for now
--A FW_EXT_INT -p udp -m udp --dport 623 -j ACCEPT
-# Port 161 for E3METER SNMP
--A FW_EXT_INT -p udp -m udp --dport 161 -j ACCEPT
+{% for item in router_external_forward_allowed %}
+-A FW_EXT_INT -p {{ item.proto }} -m {{ item.proto }} --dport {{ item.port }} -j ACCEPT
+{% endfor %}
+
 -A FW_EXT_INT -p icmp -m conntrack --ctstate NEW -j ACCEPT
 -A FW_EXT_INT -m limit --limit 10/min -j LOG  --log-prefix "FW-EXTINT-DROP: " --log-level 4
 -A FW_EXT_INT -j DROP
+
+{% if router_allow_int_inet %}
+-A FW_INT_EXT -j ACCEPT
+{% else %}
+-A FW_INT_EXT -m limit --limit 10/min -j LOG  --log-prefix "FW-INTEXT-DROP: " --log-level 4
+-A FW_INT_EXT -j DROP
+{% endif %}
 
 COMMIT
 
 *nat
 :PREROUTING ACCEPT [0:0]
 :POSTROUTING ACCEPT [0:0]
--A POSTROUTING -o enp1s0 ! -d 82.130.108.192/27 -j MASQUERADE
--A POSTROUTING -o enp2s0 -s 82.130.108.192/27 -j MASQUERADE
--A POSTROUTING -o enp2s0  -s 192.168.254.1/24 -j MASQUERADE
+{% for item in router_do_masquerade %}
+-A POSTROUTING -o {{ item.outif }} {{ item.condition }} -j MASQUERADE
+{% endfor %}
 COMMIT

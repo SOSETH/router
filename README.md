@@ -1,5 +1,7 @@
 # portal-lee
-This configures routing (iptables) and HA (keepalived) on portal-lee[1,2]
+This configures routing (iptables) and HA (keepalived) on router nodes
+
+# TODO: Fix readme
 
 ## What does it do?
 One of the nodes gets IPv4 and IPv6 of portal-lee.ethz.ch via keepalived. Each node's IPTables is configured as following:

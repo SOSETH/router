@@ -1,0 +1,49 @@
+# Which interfaces are to be considered external?
+router_external_interfaces: []
+
+# Which interfaces are to be considered internal?
+router_internal_interfaces: []
+
+# Which ports to open to external on this machine?
+router_external_open_ports:
+  - proto: tcp
+    port: 22
+  - proto: udp
+    port: 443
+  - proto: tcp
+    port: 443
+
+# Allow external machines to forward via this machine to some destination?
+router_external_forward_allowed: []
+#  - dest: 172.31.0.192/26
+#    porto: udp
+#    port: 623
+#  - dest: 172.31.0.192/26
+#    porto: udp
+#    port: 161
+
+# In which cases should the machine masquerade?
+router_do_masquerade: []
+#  - outif: eth0
+#    condition: '! -d 82.130.108.192/27'
+
+router_allow_int_inet: False
+
+# Add keepalived 'HA' IPs?
+router_ha_ips: []
+  #  - dev: enp1s0
+  #    ip: 82.130.108.220/27
+
+# Which interface to use for keepalived traffic?
+router_ha_keepalived_interface: None
+
+# Which priority does this router have?
+router_ha_priority: 50
+# Which initial state should this machine assume
+router_ha_state: MASTER
+
+# Put your random [a-zA-Z0-9]{16,32} string here
+router_ha_auth: ""
+
+# Change this if the role is deployed more than once in your broadcast domain
+router_ha_id: 42
