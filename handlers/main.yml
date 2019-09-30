@@ -1,12 +1,16 @@
 ---
   - name: restart keepalived
+    become: True
     service: name=keepalived state=restarted
 
   - name: reload sysctl
+    become: True
     service: name=systemd-sysctl state=restarted
 
   - name: reload systemd
+    become: True
     systemd: daemon_reload=yes
 
   - name: reload iptables
+    become: True
     service: name=netfilter-persistent state=restarted
