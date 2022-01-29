@@ -6,12 +6,10 @@
         - keepalived
         - iptables-persistent
       state: present
-      update_cache: True
       cache_valid_time: 1800
 
   - name: Configure keepalived
     become: True
-    when: router_ha_ips != []
     template:
       src: keepalived.conf.j2
       dest: /etc/keepalived/keepalived.conf
@@ -19,16 +17,20 @@
       group: root
       mode: 0644
     notify: restart keepalived
+    when: router_ha_ips != []
 
   - name: Configure sysctl dropin
     become: True
-    template:
-      src: sysctl.conf.j2
-      dest: /etc/sysctl.d/ansible.conf
-      owner: root
-      group: root
-      mode: 0755
-    notify: reload sysctl
+    sysctl:
+      name: "{{ item.name }}"
+      value: "{{ item.value }}"
+      sysctl_file: /etc/sysctl.d/ansible_router.conf
+      reload: True
+      state: present
+    with_items:
+      - { name: 'net.ipv4.ip_forward=1', value: 1 }
+      - { name: 'net.ipv4.ip_nonlocal_bind=1', value: 1 }
+      - { name: 'net.ipv6.ip_nonlocal_bind=1', value: 1 }
 
   - name: Configure iptables
     become: True
@@ -51,10 +53,10 @@
 
   - name: Enable services
     become: True
-    when: router_ha_ips != []
     service:
       name: "{{ item }}"
       enabled: True
       state: started
     with_items:
       - keepalived
+    when: router_ha_ips != []
