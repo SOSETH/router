@@ -12,6 +12,9 @@
 # VRRP (keepalived)
 -A INPUT -p vrrp -j ACCEPT
 -A INPUT -p ah -j ACCEPT
+{% for item in router_external_trusted_interfaces %}
+-A INPUT -i {{ item }} -j ACCEPT
+{% endfor %}
 {% for item in router_external_interfaces %}
 -A INPUT -i {{ item }} -j IN_EXT
 {% endfor %}
@@ -34,6 +37,9 @@
 -A IN_INT -j ACCEPT
 
 -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+{% for item in router_external_trusted_interfaces %}
+-A FORWARD -i {{ item }} -j ACCEPT
+{% endfor %}
 {% for extif in router_external_interfaces %}
 {% for intif in router_internal_interfaces %}
 -A FORWARD -i {{ extif }} -o {{ intif }} -j FW_EXT_INT
@@ -46,7 +52,6 @@
 {% for item in router_external_forward_allowed %}
 -A FW_EXT_INT -p {{ item.proto }} -m {{ item.proto }} --dport {{ item.port }} -j ACCEPT
 {% endfor %}
-
 -A FW_EXT_INT -p icmp -m conntrack --ctstate NEW -j ACCEPT
 -A FW_EXT_INT -m limit --limit 10/min -j LOG  --log-prefix "FW-EXTINT-DROP: " --log-level 4
 -A FW_EXT_INT -j DROP

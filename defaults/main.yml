@@ -1,6 +1,11 @@
 # Which interfaces are to be considered external?
 router_external_interfaces: []
 
+# Which interfaces are to be considered trusted and external?
+# Default is to accept packages from these interfaces.
+# Example: VPN interface (e.g. wg0)
+router_external_trusted_interfaces: []
+
 # Which interfaces are to be considered internal?
 router_internal_interfaces: []
 

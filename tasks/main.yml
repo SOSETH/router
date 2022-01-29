@@ -60,3 +60,5 @@
     with_items:
       - keepalived
     when: router_ha_ips != []
+
+  - meta: flush_handlers
