@@ -28,9 +28,9 @@
       reload: True
       state: present
     with_items:
-      - { name: 'net.ipv4.ip_forward=1', value: 1 }
-      - { name: 'net.ipv4.ip_nonlocal_bind=1', value: 1 }
-      - { name: 'net.ipv6.ip_nonlocal_bind=1', value: 1 }
+      - { name: 'net.ipv4.ip_forward', value: '1' }
+      - { name: 'net.ipv4.ip_nonlocal_bind', value: '1' }
+      - { name: 'net.ipv6.ip_nonlocal_bind', value: '1' }
 
   - name: Configure iptables
     become: True
